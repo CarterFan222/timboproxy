@@ -39,7 +39,7 @@
   <!-- Header / Hero -->
   <div class="text-center py-8">
     <div class="flex items-center justify-center space-x-4 mb-4">
-      <!-- Star Wars circle-style logo -->
+      <!-- Star Wars-inspired circle logo -->
       <div class="rounded-full bg-blue-600 w-12 h-12 flex items-center justify-center text-white text-xl font-bold shadow-lg">
         ✦
       </div>
@@ -84,6 +84,7 @@
         return;
       }
 
+      // Show loading screen
       frame.srcdoc = `
         <div style='display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; font-family:sans-serif;'>
           <div class='spinner'></div>
@@ -92,17 +93,17 @@
       `;
 
       try {
-        const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
+        const response = await fetch(\`https://timboproxybackend.vercel.app/proxy?url=\${encodeURIComponent(url)}\`);
         const text = await response.text();
 
         frame.srcdoc = text;
       } catch (e) {
-        frame.srcdoc = `
+        frame.srcdoc = \`
           <div style='padding:50px; text-align:center; color:#dc2626; font-family:sans-serif'>
             <h2>⚠️ Failed to load the page</h2>
-            <p>Please ensure the site allows embedding and CORS proxy access.</p>
+            <p>Please ensure the site allows embedding and proxy access.</p>
           </div>
-        `;
+        \`;
         console.error(e);
       }
     }
