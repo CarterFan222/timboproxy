@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -53,7 +53,7 @@
       value="https://"
       class="flex-1 px-4 py-3 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none"
       placeholder="Enter a full URL including https://"
-      onkeydown="if(event.key === 'Enter') loadSite();"
+      onkeydown="if(event.key==='Enter') loadSite();"
     />
     <button
       onclick="loadSite()"
@@ -74,8 +74,6 @@
   <!-- Script -->
   <script>
     async function loadSite() {
-      console.log("loadSite() called"); // Debug log
-
       const input = document.getElementById('urlInput');
       let url = input.value.trim();
 
@@ -86,7 +84,7 @@
 
       const frame = document.getElementById('browserFrame');
 
-      // Show loading spinner while fetching
+      // Show loading spinner
       frame.srcdoc = `
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; font-family:sans-serif;">
           <div class="spinner"></div>
@@ -95,13 +93,12 @@
       `;
 
       try {
+        // Call your Vercel backend proxy API
         const response = await fetch(\`https://timboproxybackend.vercel.app/proxy?url=\${encodeURIComponent(url)}\`);
-
-        if (!response.ok) {
-          throw new Error('Network response was not ok: ' + response.status);
-        }
-
+        if (!response.ok) throw new Error('Network response was not ok');
         const html = await response.text();
+
+        // Load proxied page HTML into iframe
         frame.srcdoc = html;
       } catch (error) {
         frame.srcdoc = \`
