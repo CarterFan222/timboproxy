@@ -1,62 +1,119 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TimboProxy</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: #0f172a;
+    }
+    #browserFrame {
+      width: 100%;
+      height: calc(100vh - 6rem);
+      border: none;
+      background-color: white;
+    }
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-900 text-white font-sans">
+<body class="text-white font-sans">
 
+  <!-- Header / Hero -->
   <div class="text-center py-8">
-    <h1 class="text-3xl font-bold">TimboProxy</h1>
-    <p class="text-gray-400">Your embedded web browser</p>
-  </div>
-
-  <div class="flex justify-center gap-2 px-4">
-    <input id="urlInput" type="text" value="https://" placeholder="Enter a URL"
-      class="w-full max-w-md px-4 py-2 rounded bg-gray-800 text-white placeholder-gray-400" />
-    <button id="goButton" class="bg-blue-600 px-4 py-2 rounded hover:bg-blue-700">Go</button>
-  </div>
-
-  <iframe id="browserFrame" class="mt-6 w-full h-[80vh] bg-white" srcdoc="
-    <div style='padding:20px;text-align:center;font-family:sans-serif'>
-      <h2>Welcome to TimboProxy</h2>
-      <p>Type a URL above and press Go.</p>
+    <div class="flex items-center justify-center space-x-4 mb-4">
+      <!-- Star Wars-inspired circle logo -->
+      <div class="rounded-full bg-blue-600 w-12 h-12 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+        ✦
+      </div>
+      <h1 class="text-3xl font-extrabold tracking-wide">TimboProxy</h1>
     </div>
-  "></iframe>
+    <p class="text-gray-400">Browse the web through a proxy - modern, fast, and secure.</p>
+  </div>
 
+  <!-- URL Bar -->
+  <div class="w-full px-4 sm:px-8 pb-4 flex items-center space-x-2 max-w-3xl mx-auto">
+    <input
+      id="urlInput"
+      type="text"
+      value="https://"
+      class="flex-1 px-4 py-3 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none"
+      placeholder="Enter a full URL including https://"
+      onkeydown="if(event.key === 'Enter') loadSite();"
+    />
+    <button
+      onclick="loadSite()"
+      class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg"
+    >
+      Go
+    </button>
+  </div>
+
+  <!-- Frame / Browser View -->
+  <iframe id="browserFrame" srcdoc='
+    <div style="text-align:center; padding:50px; font-family:sans-serif; color:#1e293b">
+      <h2 style="font-size:2em;">Welcome to TimboProxy</h2>
+      <p style="color:#64748b">Enter a URL above and explore the web through a modern proxy interface.</p>
+    </div>
+  '></iframe>
+
+  <!-- Script -->
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const goBtn = document.getElementById("goButton");
-      const urlInput = document.getElementById("urlInput");
-      const iframe = document.getElementById("browserFrame");
+    async function loadSite() {
+      console.log("loadSite() called"); // Debug log
 
-      async function loadSite() {
-        const url = urlInput.value.trim();
-        console.log("Loading:", url);
+      const input = document.getElementById('urlInput');
+      let url = input.value.trim();
 
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-          alert("Please enter a full URL including https://");
-          return;
-        }
-
-        iframe.srcdoc = `<p style='padding:20px;'>Loading ${url}...</p>`;
-
-        try {
-          const res = await fetch(`https://timboproxybackend.vercel.app/proxy?url=${encodeURIComponent(url)}`);
-          const html = await res.text();
-          iframe.srcdoc = html;
-        } catch (e) {
-          console.error(e);
-          iframe.srcdoc = `<p style='padding:20px;color:red;'>Failed to load ${url}</p>`;
-        }
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        alert("Please enter a valid URL starting with http:// or https://");
+        return;
       }
 
-      goBtn.addEventListener("click", loadSite);
-      urlInput.addEventListener("keydown", function (e) {
-        if (e.key === "Enter") loadSite();
-      });
-    });
+      const frame = document.getElementById('browserFrame');
+
+      // Show loading spinner while fetching
+      frame.srcdoc = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; font-family:sans-serif;">
+          <div class="spinner"></div>
+          <p style="margin-top:20px; color:#64748b;">Loading <strong>${url}</strong> via TimboProxy...</p>
+        </div>
+      `;
+
+      try {
+        const response = await fetch(\`https://timboproxybackend.vercel.app/proxy?url=\${encodeURIComponent(url)}\`);
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok: ' + response.status);
+        }
+
+        const html = await response.text();
+        frame.srcdoc = html;
+      } catch (error) {
+        frame.srcdoc = \`
+          <div style="padding:50px; text-align:center; color:#dc2626; font-family:sans-serif">
+            <h2>⚠️ Failed to load the page</h2>
+            <p>Please ensure the site allows embedding and proxy access.</p>
+            <p style="color:#999;">\${error.message}</p>
+          </div>
+        \`;
+        console.error(error);
+      }
+    }
   </script>
 </body>
 </html>
